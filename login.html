@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Sign in to Bashewam School payroll management." />
+    <title>Sign in — Bashewam School Payroll</title>
+    <link rel="icon" href="assets/logo.png" type="image/png" />
+    <link rel="stylesheet" href="styles.css?v=6" />
+  </head>
+  <body class="login-page">
+    <div class="login-backdrop" aria-hidden="true"></div>
+
+    <div class="login-layout">
+      <aside class="login-hero" aria-labelledby="login-school-name">
+        <div class="login-crest" aria-hidden="true">
+          <div class="login-logo-wrap">
+            <img
+              id="login-logo"
+              class="login-logo-img"
+              src="assets/logo.png?v=1"
+              alt=""
+              width="112"
+              height="112"
+            />
+            <div id="login-logo-fallback" class="login-logo-fallback">B</div>
+          </div>
+        </div>
+
+        <p class="login-est">Est. for excellence in education</p>
+        <h1 id="login-school-name" class="login-school-name">Bashewam School</h1>
+        <p class="login-motto">Knowledge · Character · Service</p>
+
+        <hr class="login-ornament" aria-hidden="true" />
+
+        <p class="login-hero-note">
+          Secure payroll portal for authorized school staff. Please sign in with credentials issued by the
+          administration office.
+        </p>
+      </aside>
+
+      <main class="login-main">
+        <div class="login-card">
+          <header class="login-card-header">
+            <h2 class="login-card-title">Staff sign in</h2>
+            <p class="login-card-subtitle">Payroll management system</p>
+          </header>
+
+          <form id="login-form" class="login-form" novalidate>
+            <div id="login-error" class="login-alert" role="alert" hidden></div>
+
+            <div class="field-block">
+              <label for="login-username">Username</label>
+              <input
+                id="login-username"
+                name="username"
+                type="text"
+                autocomplete="username"
+                required
+                placeholder="Your username"
+              />
+            </div>
+
+            <div class="field-block">
+              <div class="label-row">
+                <label for="login-password">Password</label>
+                <button type="button" class="link-btn" id="toggle-password" aria-pressed="false">
+                  Show
+                </button>
+              </div>
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+                placeholder="Your password"
+              />
+            </div>
+
+            <div class="login-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="login-remember" name="remember" />
+                <span>Remember this device</span>
+              </label>
+              <a href="#" class="link-muted" id="forgot-link">Forgot password?</a>
+            </div>
+
+            <div id="forgot-panel" class="forgot-panel" hidden>
+              <p>
+                Password resets are handled by the school office. Contact your administrator or the finance
+                department.
+              </p>
+            </div>
+
+            <button type="submit" class="btn btn-login">Enter portal</button>
+          </form>
+        </div>
+
+        <p class="login-footer">© Bashewam School · Authorized personnel only</p>
+      </main>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="login.js"></script>
+  </body>
+</html>

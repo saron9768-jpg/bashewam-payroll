@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Payroll management system for Bashewam School — staff roster and payroll runs." />
+    <title>Bashewam School — Payroll Management</title>
+    <link rel="icon" href="assets/logo.png" type="image/png" />
+    <link rel="stylesheet" href="styles.css?v=6" />
+    <script src="auth.js"></script>
+    <script>
+      requireAuth();
+    </script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo-wrap">
+          <img
+            id="header-logo"
+            class="brand-logo-img"
+            src="assets/logo.png?v=1"
+            alt="Bashewam School logo"
+            width="72"
+            height="72"
+          />
+          <div id="header-logo-fallback" class="brand-mark" aria-hidden="true">B</div>
+        </div>
+        <div class="brand-text">
+          <h1>Bashewam School</h1>
+          <p>Payroll management</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <nav class="nav-tabs" aria-label="Main sections">
+          <button type="button" data-panel="dashboard" class="active">Dashboard</button>
+          <button type="button" data-panel="employees">Staff</button>
+          <button type="button" data-panel="payroll">Payroll</button>
+          <button type="button" data-panel="history">History</button>
+        </nav>
+        <span class="header-user" id="header-user" aria-live="polite"></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-logout">Log out</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="dashboard" class="panel active" aria-labelledby="dash-heading">
+        <h2 id="dash-heading" class="visually-hidden">Dashboard</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span>Staff on roster</span>
+            <strong id="stat-staff">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Combined monthly gross</span>
+            <strong id="stat-gross">—</strong>
+          </div>
+          <div class="stat-card">
+            <span>Payroll runs saved</span>
+            <strong id="stat-runs">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Latest run</span>
+            <strong id="stat-last" style="font-size: 1rem">—</strong>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="section-title" style="margin: 0 0 0.75rem">About this system</h3>
+          <p style="margin: 0; color: var(--muted); font-size: 0.95rem">
+            Staff are organized by school section: <strong>Kindergarten</strong>, <strong>Grades 1–4</strong>,
+            <strong>Grades 5–8</strong>, and <strong>Grades 9–12</strong>. Use <strong>Staff</strong> to manage the roster,
+            <strong>Payroll</strong> to run pay by section or for everyone, and <strong>History</strong> for past runs.
+            Figures use Ethiopian Birr (ETB). Records are saved in your browser on this device.
+          </p>
+        </div>
+        <h3 class="visually-hidden" id="section-stats-heading">Staff by section</h3>
+        <div class="stats-grid stats-section-row" id="section-stats" aria-labelledby="section-stats-heading"></div>
+      </section>
+
+      <section id="employees" class="panel" aria-labelledby="emp-heading">
+        <h2 id="emp-heading" class="visually-hidden">Staff roster</h2>
+        <div class="card">
+          <div class="section-title staff-toolbar">
+            <h3 style="margin: 0">Staff directory</h3>
+            <div class="staff-toolbar-filters">
+              <select id="staff-section-filter" class="filter-select" aria-label="Filter by school section">
+                <option value="">All sections</option>
+                <option value="kg">Kindergarten</option>
+                <option value="g14">Grades 1–4</option>
+                <option value="g58">Grades 5–8</option>
+                <option value="g912">Grades 9–12</option>
+              </select>
+              <input
+                type="search"
+                id="staff-filter"
+                class="filter-input"
+                placeholder="Search name, role, subject…"
+                autocomplete="off"
+                aria-label="Filter staff list"
+              />
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="employee-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Section</th>
+                  <th>Role</th>
+                  <th>Subject / focus</th>
+                  <th>Base salary</th>
+                  <th>Allowance</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 id="emp-form-title" class="section-title">Add staff member</h3>
+          <form id="emp-form">
+            <input type="hidden" id="emp-id" value="" />
+            <div class="form-grid">
+              <div>
+                <label for="emp-name">Full name</label>
+                <input id="emp-name" type="text" required autocomplete="name" placeholder="e.g. Sara Mengistu" />
+              </div>
+              <div>
+                <label for="emp-section">School section</label>
+                <select id="emp-section" required>
+                  <option value="kg">Kindergarten</option>
+                  <option value="g14">Grades 1–4</option>
+                  <option value="g58">Grades 5–8</option>
+                  <option value="g912">Grades 9–12</option>
+                </select>
+              </div>
+              <div>
+                <label for="emp-role">Role</label>
+                <input id="emp-role" type="text" required placeholder="e.g. Teacher" />
+              </div>
+              <div>
+                <label for="emp-dept">Subject or focus</label>
+                <input id="emp-dept" type="text" placeholder="e.g. English, Mathematics" />
+              </div>
+              <div>
+                <label for="emp-base">Base salary (ETB / month)</label>
+                <input
+                  id="emp-base"
+                  type="number"
+                  min="10000"
+                  max="15000"
+                  step="100"
+                  required
+                  value="12000"
+                />
+              </div>
+              <div>
+                <label for="emp-allow">Monthly allowance (ETB)</label>
+                <input id="emp-allow" type="number" min="0" step="100" value="1200" />
+              </div>
+            </div>
+            <div class="actions">
+              <button type="submit" class="btn btn-primary" id="emp-submit">Add to roster</button>
+              <button type="button" class="btn btn-ghost" id="emp-cancel" style="display: none">Cancel edit</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section id="payroll" class="panel" aria-labelledby="pay-heading">
+        <h2 id="pay-heading" class="visually-hidden">Run payroll</h2>
+        <div class="card">
+          <h3 class="section-title">Run payroll</h3>
+          <div class="form-grid">
+            <div>
+              <label for="pay-period">Pay period</label>
+              <input id="pay-period" type="text" placeholder="e.g. March 2026" />
+            </div>
+            <div>
+              <label for="tax-pct">Income tax (%)</label>
+              <input id="tax-pct" type="number" min="0" max="100" step="0.5" value="15" />
+            </div>
+            <div>
+              <label for="pension-pct">Pension / other (%)</label>
+              <input id="pension-pct" type="number" min="0" max="100" step="0.5" value="7" />
+            </div>
+            <div>
+              <label for="payroll-section">Section</label>
+              <select id="payroll-section">
+                <option value="">All sections</option>
+                <option value="kg">Kindergarten</option>
+                <option value="g14">Grades 1–4</option>
+                <option value="g58">Grades 5–8</option>
+                <option value="g912">Grades 9–12</option>
+              </select>
+            </div>
+            <div>
+              <label for="payroll-employee">Individual (optional)</label>
+              <select id="payroll-employee"></select>
+            </div>
+          </div>
+          <p style="color: var(--muted); font-size: 0.85rem; margin: 0 0 1rem">
+            Choose a section to pay only that group, or pick one person. Leave both on “All” for the full roster. Gross =
+            base + allowance; net = gross − tax − pension.
+          </p>
+          <button type="button" class="btn btn-primary" id="btn-run-payroll">Calculate &amp; save run</button>
+        </div>
+        <div id="payroll-output" class="card" style="display: none"></div>
+      </section>
+
+      <section id="history" class="panel" aria-labelledby="hist-heading">
+        <h2 id="hist-heading" class="visually-hidden">Payroll history</h2>
+        <div class="card">
+          <h3 class="section-title">
+            Saved payroll runs
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-reset-demo">Restore default staff list</button>
+          </h3>
+          <div class="table-wrap">
+            <table id="history-table">
+              <thead>
+                <tr>
+                  <th>Period</th>
+                  <th>Staff count</th>
+                  <th>Total gross</th>
+                  <th>Total net</th>
+                  <th class="no-print">Details</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <p class="footer-note">© Bashewam School. Payroll data is stored on this device only.</p>
+    </main>
+
+    <div id="run-modal" class="modal-root" hidden role="dialog" aria-modal="true" aria-labelledby="run-modal-title">
+      <div class="modal-backdrop" data-close-run-modal tabindex="-1"></div>
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="run-modal-title">Payroll run</h3>
+          <button type="button" class="modal-close no-print" data-close-run-modal aria-label="Close">×</button>
+        </div>
+        <div id="run-modal-body" class="modal-body"></div>
+        <div class="modal-actions no-print">
+          <button type="button" class="btn btn-ghost btn-sm" id="run-modal-print">Print</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="run-modal-csv">Download CSV</button>
+          <button type="button" class="btn btn-danger btn-sm" id="run-modal-delete">Delete run</button>
+          <button type="button" class="btn btn-primary btn-sm" data-close-run-modal>Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      initBrandLogo("header-logo", "header-logo-fallback");
+      const u = getCurrentUsername();
+      if (u) document.getElementById("header-user").textContent = u;
+      document.getElementById("btn-logout").addEventListener("click", logout);
+
+      const mo = new MutationObserver(() => {
+        const el = document.getElementById("payroll-output");
+        el.style.display = el.innerHTML.trim() ? "block" : "none";
+      });
+      mo.observe(document.getElementById("payroll-output"), { childList: true, subtree: true });
+    </script>
+    <script src="app.js"></script>
+  </body>
+</html>
