@@ -151,10 +151,136 @@ function calcEmployeeRow(emp, taxPercent, pensionPercent) {
   return { gross, tax, pension, net };
 }
 
+function greetingForUser(name) {
+  const hour = new Date().getHours();
+  const time =
+    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  if (name) return `${time}, ${name}`;
+  return time;
+}
+
+function formatDashDate() {
+  return new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function defaultPayPeriod() {
+  const el = document.getElementById("pay-period");
+  if (el && !el.value.trim()) {
+    el.value = new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  }
+}
+
+function sectionBadgeHtml(sectionId) {
+  const cls = validSection(sectionId) ? `section-badge--${sectionId}` : "";
+  return `<span class="section-badge ${cls}">${escapeHtml(sectionLabel(sectionId))}</span>`;
+}
+
+function filterStaffList(employees) {
+  const q = getStaffFilterQuery();
+  const sec = getStaffSectionFilter();
+  let list = employees;
+  if (sec) list = list.filter((e) => e.section === sec);
+  if (q) {
+    list = list.filter((e) => {
+      const dept = (e.department || "").toLowerCase();
+      const secLab = sectionLabel(e.section).toLowerCase();
+      return (
+        e.name.toLowerCase().includes(q) ||
+        e.role.toLowerCase().includes(q) ||
+        dept.includes(q) ||
+        secLab.includes(q)
+      );
+    });
+  }
+  return list;
+}
+
+function renderStaffPanelSummary() {
+  const el = document.getElementById("staff-panel-stats");
+  if (!el) return;
+  const total = state.employees.length;
+  const showing = filterStaffList(state.employees);
+  const gross = showing.reduce((s, e) => s + e.baseSalary + e.allowance, 0);
+  el.innerHTML = `
+    <div class="mini-stat"><span>Showing</span><strong>${showing.length}</strong></div>
+    <div class="mini-stat"><span>Total roster</span><strong>${total}</strong></div>
+    <div class="mini-stat"><span>Est. monthly gross</span><strong style="font-size:0.95rem">${formatMoney(gross)}</strong></div>`;
+}
+
+function getPayrollScopeList() {
+  const sectionId = document.getElementById("payroll-section")?.value || "";
+  const filterId = document.getElementById("payroll-employee")?.value || "";
+  let list = state.employees;
+  if (sectionId && validSection(sectionId)) {
+    list = list.filter((e) => e.section === sectionId);
+  }
+  if (filterId) {
+    const one = state.employees.find((e) => e.id === filterId);
+    list = one ? [one] : [];
+  }
+  return list;
+}
+
+function renderPayrollAside() {
+  const el = document.getElementById("payroll-aside");
+  if (!el) return;
+  const list = getPayrollScopeList();
+  const taxP = Number(document.getElementById("tax-pct")?.value) || 0;
+  const penP = Number(document.getElementById("pension-pct")?.value) || 0;
+  const gross = list.reduce((s, e) => s + e.baseSalary + e.allowance, 0);
+  let estNet = 0;
+  for (const e of list) estNet += calcEmployeeRow(e, taxP, penP).net;
+
+  const scopeLabel =
+    list.length === 0
+      ? "No staff in scope"
+      : list.length === 1
+        ? list[0].name
+        : list.length === state.employees.length
+          ? "Full roster"
+          : `${list.length} staff selected`;
+
+  el.innerHTML = `
+    <h3 class="card-title">Run preview</h3>
+    <p class="card-subtitle">${escapeHtml(scopeLabel)}</p>
+    <div class="aside-row"><span>Staff to pay</span><strong>${list.length}</strong></div>
+    <div class="aside-row"><span>Est. gross</span><strong>${formatMoney(gross)}</strong></div>
+    <div class="aside-row"><span>Tax ${taxP}% · Pension ${penP}%</span><span>—</span></div>
+    <div class="aside-row"><span>Est. net pay</span><strong>${formatMoney(estNet)}</strong></div>
+    ${
+      list.length === 0
+        ? '<p class="card-subtitle" style="margin-top:0.75rem">Add staff on the Staff tab or widen your filters.</p>'
+        : ""
+    }`;
+}
+
+function renderHistoryPanelSummary() {
+  const el = document.getElementById("history-panel-stats");
+  if (!el) return;
+  const runs = state.payrollRuns.length;
+  const last = state.payrollRuns[state.payrollRuns.length - 1];
+  const totalNet = state.payrollRuns.reduce((s, r) => s + r.totalNet, 0);
+  el.innerHTML = `
+    <div class="mini-stat"><span>Saved runs</span><strong>${runs}</strong></div>
+    <div class="mini-stat"><span>Latest period</span><strong style="font-size:0.85rem">${last ? escapeHtml(last.period) : "—"}</strong></div>
+    <div class="mini-stat"><span>All-time net paid</span><strong style="font-size:0.9rem">${runs ? formatMoney(totalNet) : "—"}</strong></div>`;
+}
+
 function renderDashboard() {
   const emps = state.employees;
   const totalMonthly = emps.reduce((s, e) => s + e.baseSalary + e.allowance, 0);
   const lastRun = state.payrollRuns[state.payrollRuns.length - 1];
+
+  const greetEl = document.getElementById("dash-greeting");
+  if (greetEl) greetEl.textContent = greetingForUser(getCurrentUsername());
+
+  const dateEl = document.getElementById("dash-date");
+  if (dateEl) dateEl.textContent = formatDashDate();
 
   document.getElementById("stat-staff").textContent = String(emps.length);
   document.getElementById("stat-gross").textContent = formatMoney(totalMonthly);
@@ -171,8 +297,50 @@ function renderDashboard() {
   if (secEl) {
     secEl.innerHTML = SCHOOL_SECTIONS.map((s) => {
       const n = emps.filter((e) => e.section === s.id).length;
-      return `<div class="stat-card"><span>${s.label}</span><strong>${n}</strong><span class="stat-card-hint">on roster</span></div>`;
+      return `<span class="section-pill">${escapeHtml(s.label)} <strong>${n}</strong></span>`;
     }).join("");
+  }
+
+  const recentWrap = document.getElementById("recent-runs-wrap");
+  if (recentWrap) {
+    if (state.payrollRuns.length === 0) {
+      recentWrap.innerHTML = `
+        <div class="recent-runs-empty">
+          <p>No payroll runs saved yet.</p>
+          <button type="button" class="btn btn-primary btn-sm" data-goto="payroll">Run your first payroll</button>
+        </div>`;
+      recentWrap.querySelector("[data-goto]")?.addEventListener("click", () =>
+        setActivePanel("payroll")
+      );
+    } else {
+      const recent = [...state.payrollRuns].reverse().slice(0, 3);
+      recentWrap.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Period</th><th>Staff</th><th>Net pay</th><th></th></tr>
+            </thead>
+            <tbody>
+              ${recent
+                .map(
+                  (r) => `
+                <tr>
+                  <td>${escapeHtml(r.period)}</td>
+                  <td>${r.lineCount}</td>
+                  <td><strong>${formatMoney(r.totalNet)}</strong></td>
+                  <td class="actions">
+                    <button type="button" class="btn btn-ghost btn-sm" data-view-run="${r.id}">View</button>
+                  </td>
+                </tr>`
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>`;
+      recentWrap.querySelectorAll("[data-view-run]").forEach((btn) => {
+        btn.addEventListener("click", () => openRunModal(btn.getAttribute("data-view-run")));
+      });
+    }
   }
 }
 
@@ -183,29 +351,16 @@ function renderEmployees() {
   if (state.employees.length === 0) {
     tbody.innerHTML =
       '<tr><td colspan="7"><div class="empty-state">No staff yet. Add employees below.</div></td></tr>';
+    renderStaffPanelSummary();
     return;
   }
 
-  const q = getStaffFilterQuery();
-  const sec = getStaffSectionFilter();
-  let list = state.employees;
-  if (sec) list = list.filter((e) => e.section === sec);
-  if (q) {
-    list = list.filter((e) => {
-      const dept = (e.department || "").toLowerCase();
-      const secLab = sectionLabel(e.section).toLowerCase();
-      return (
-        e.name.toLowerCase().includes(q) ||
-        e.role.toLowerCase().includes(q) ||
-        dept.includes(q) ||
-        secLab.includes(q)
-      );
-    });
-  }
+  const list = filterStaffList(state.employees);
 
   if (list.length === 0) {
     tbody.innerHTML =
       '<tr><td colspan="7"><div class="empty-state">No staff match your filters. Try clearing the section or search.</div></td></tr>';
+    renderStaffPanelSummary();
     return;
   }
 
@@ -213,7 +368,7 @@ function renderEmployees() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${escapeHtml(emp.name)}</td>
-      <td>${escapeHtml(sectionLabel(emp.section))}</td>
+      <td>${sectionBadgeHtml(emp.section)}</td>
       <td>${escapeHtml(emp.role)}</td>
       <td>${escapeHtml(emp.department)}</td>
       <td>${formatMoney(emp.baseSalary)}</td>
@@ -232,6 +387,8 @@ function renderEmployees() {
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
     btn.addEventListener("click", () => removeEmployee(btn.getAttribute("data-del")));
   });
+
+  renderStaffPanelSummary();
 }
 
 function escapeHtml(s) {
@@ -393,6 +550,7 @@ function renderPayrollForm() {
     sel.appendChild(opt);
   }
   if (prev && [...sel.options].some((o) => o.value === prev)) sel.value = prev;
+  renderPayrollAside();
 }
 
 function renderHistory() {
@@ -423,6 +581,8 @@ function renderHistory() {
   tbody.querySelectorAll("[data-view-run]").forEach((btn) => {
     btn.addEventListener("click", () => openRunModal(btn.getAttribute("data-view-run")));
   });
+
+  renderHistoryPanelSummary();
 }
 
 function runPayroll() {
@@ -544,6 +704,10 @@ document.querySelectorAll(".nav-tabs button").forEach((btn) => {
   btn.addEventListener("click", () => setActivePanel(btn.dataset.panel));
 });
 
+document.querySelectorAll("[data-goto]").forEach((btn) => {
+  btn.addEventListener("click", () => setActivePanel(btn.getAttribute("data-goto")));
+});
+
 document.getElementById("emp-form").addEventListener("submit", (ev) => {
   ev.preventDefault();
   const id = document.getElementById("emp-id").value;
@@ -615,6 +779,12 @@ document.getElementById("staff-section-filter").addEventListener("change", () =>
 
 document.getElementById("payroll-section").addEventListener("change", () => renderPayrollForm());
 
+document.getElementById("payroll-employee").addEventListener("change", () => renderPayrollAside());
+
+document.getElementById("tax-pct").addEventListener("input", () => renderPayrollAside());
+
+document.getElementById("pension-pct").addEventListener("input", () => renderPayrollAside());
+
 document.getElementById("payroll-output").addEventListener("click", (e) => {
   if (e.target.closest("#btn-print-latest")) {
     document.body.classList.add("print-only-payroll");
@@ -656,7 +826,10 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+defaultPayPeriod();
 renderDashboard();
 renderEmployees();
 renderPayrollForm();
 renderHistory();
+renderPayrollAside();
+renderHistoryPanelSummary();

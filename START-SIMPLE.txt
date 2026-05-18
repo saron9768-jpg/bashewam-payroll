@@ -1,0 +1,43 @@
+BASHEWAM PAYROLL — PUT IT ON GOOGLE (FOR BEGINNERS)
+==================================================
+
+You only need to do ONE thing on your computer:
+
+  >>> Double-click:  START-HERE.bat  <<<
+
+Follow what it says. A browser will open a few times — sign in with Google when asked.
+
+WHAT THE SCRIPT DOES FOR YOU
+----------------------------
+- Installs Node.js (if missing)
+- Installs Google Firebase tools
+- Uploads your payroll website to the internet
+- Opens Google Search Console so teachers can find it on Google
+
+YOUR WEBSITE ADDRESS (after success)
+------------------------------------
+  https://bashewam-school-payroll.web.app
+
+If that link says "project not found", the script will ask you to create a Firebase
+project. Use Project ID exactly:  bashewam-school-payroll
+
+GOOGLE SEARCH (important)
+-------------------------
+The site will NOT appear on Google instantly. Usually 3 days to 2 weeks.
+
+After START-HERE.bat finishes:
+1. Google Search Console opens in your browser
+2. Add property: https://bashewam-school-payroll.web.app
+3. Verify (follow Google's steps — often one click)
+4. Sitemaps → add: https://bashewam-school-payroll.web.app/sitemap.xml
+5. URL inspection → paste login page → Request indexing
+
+Teachers can search:  Bashewam School payroll
+
+CHANGE PASSWORD BEFORE SHARING
+------------------------------
+Open login.js and change DEMO_USER and DEMO_PASS from the test password.
+
+NEED HELP?
+----------
+If START-HERE.bat shows an error, write down the red text and ask for help.

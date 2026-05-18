@@ -6,7 +6,7 @@
     <meta name="description" content="Payroll management system for Bashewam School — staff roster and payroll runs." />
     <title>Bashewam School — Payroll Management</title>
     <link rel="icon" href="assets/logo.png" type="image/png" />
-    <link rel="stylesheet" href="styles.css?v=6" />
+    <link rel="stylesheet" href="styles.css?v=8" />
     <script src="auth.js"></script>
     <script>
       requireAuth();
@@ -46,42 +46,106 @@
     <main>
       <section id="dashboard" class="panel active" aria-labelledby="dash-heading">
         <h2 id="dash-heading" class="visually-hidden">Dashboard</h2>
+        <div class="dash-welcome">
+          <div class="dash-crest" aria-hidden="true">
+            <div class="dash-logo-wrap">
+              <img id="dash-logo" class="dash-logo-img" src="assets/logo.png?v=1" alt="" width="88" height="88" />
+              <div id="dash-logo-fallback" class="dash-logo-fallback">B</div>
+            </div>
+          </div>
+          <div class="dash-welcome-text">
+            <p class="dash-date" id="dash-date" aria-live="polite"></p>
+            <h2 id="dash-greeting">Welcome back</h2>
+            <p class="dash-motto">Knowledge · Character · Service</p>
+            <p>
+              Here is your payroll overview for Bashewam School. Review staff counts, run monthly pay, and
+              check past runs — all amounts are in Ethiopian Birr (ETB).
+            </p>
+          </div>
+        </div>
+
+        <div class="quick-actions" aria-label="Quick actions">
+          <button type="button" class="quick-action-btn" data-goto="payroll">
+            <span class="qa-icon" aria-hidden="true">💰</span>
+            <strong>Run payroll</strong>
+            <span>Calculate pay for a period</span>
+          </button>
+          <button type="button" class="quick-action-btn" data-goto="employees">
+            <span class="qa-icon" aria-hidden="true">👥</span>
+            <strong>Manage staff</strong>
+            <span>View or edit the roster</span>
+          </button>
+          <button type="button" class="quick-action-btn" data-goto="history">
+            <span class="qa-icon" aria-hidden="true">📋</span>
+            <strong>Payroll history</strong>
+            <span>Open saved payroll runs</span>
+          </button>
+        </div>
+
         <div class="stats-grid">
-          <div class="stat-card">
+          <div class="stat-card stat-card--highlight">
+            <div class="stat-card-icon" aria-hidden="true">👥</div>
             <span>Staff on roster</span>
             <strong id="stat-staff">0</strong>
           </div>
           <div class="stat-card">
+            <div class="stat-card-icon" aria-hidden="true">📊</div>
             <span>Combined monthly gross</span>
             <strong id="stat-gross">—</strong>
           </div>
           <div class="stat-card">
+            <div class="stat-card-icon" aria-hidden="true">✅</div>
             <span>Payroll runs saved</span>
             <strong id="stat-runs">0</strong>
           </div>
           <div class="stat-card">
+            <div class="stat-card-icon" aria-hidden="true">📅</div>
             <span>Latest run</span>
-            <strong id="stat-last" style="font-size: 1rem">—</strong>
+            <strong id="stat-last" style="font-size: 1.1rem">—</strong>
           </div>
         </div>
-        <div class="card">
-          <h3 class="section-title" style="margin: 0 0 0.75rem">About this system</h3>
-          <p style="margin: 0; color: var(--muted); font-size: 0.95rem">
-            Staff are organized by school section: <strong>Kindergarten</strong>, <strong>Grades 1–4</strong>,
-            <strong>Grades 5–8</strong>, and <strong>Grades 9–12</strong>. Use <strong>Staff</strong> to manage the roster,
-            <strong>Payroll</strong> to run pay by section or for everyone, and <strong>History</strong> for past runs.
-            Figures use Ethiopian Birr (ETB). Records are saved in your browser on this device.
-          </p>
+        <div class="dash-grid-2">
+          <div class="card">
+            <h3 class="card-title">Staff by section</h3>
+            <p class="card-subtitle">Kindergarten through Grades 9–12</p>
+            <div class="dash-section-pills" id="section-stats" aria-live="polite"></div>
+          </div>
+          <div class="card">
+            <h3 class="card-title">Recent payroll runs</h3>
+            <p class="card-subtitle">Your last saved runs at a glance</p>
+            <div id="recent-runs-wrap"></div>
+          </div>
         </div>
-        <h3 class="visually-hidden" id="section-stats-heading">Staff by section</h3>
-        <div class="stats-grid stats-section-row" id="section-stats" aria-labelledby="section-stats-heading"></div>
+
+        <div class="card">
+          <h3 class="card-title">How to use this system</h3>
+          <p class="card-subtitle" style="margin-bottom: 0.75rem">
+            Staff are grouped by school section. Records stay on this device in your browser.
+          </p>
+          <ul style="margin: 0; padding-left: 1.25rem; color: var(--muted); font-size: 0.92rem; line-height: 1.7">
+            <li><strong style="color: var(--text)">Staff</strong> — add, edit, or search teachers and support staff by section.</li>
+            <li><strong style="color: var(--text)">Payroll</strong> — run pay for everyone, one section, or one person; tax and pension are applied automatically.</li>
+            <li><strong style="color: var(--text)">History</strong> — view, print, or export CSV for any saved run.</li>
+          </ul>
+        </div>
       </section>
 
       <section id="employees" class="panel" aria-labelledby="emp-heading">
         <h2 id="emp-heading" class="visually-hidden">Staff roster</h2>
+
+        <div class="panel-hero panel-hero--staff">
+          <div class="panel-hero-text">
+            <h2 class="panel-hero-title">Staff directory</h2>
+            <p class="panel-hero-desc">
+              Teachers and support staff across Kindergarten through Grades 9–12. Search, filter by section, or add new members below.
+            </p>
+          </div>
+          <div class="panel-hero-stats" id="staff-panel-stats" aria-live="polite"></div>
+        </div>
+
         <div class="card">
           <div class="section-title staff-toolbar">
-            <h3 style="margin: 0">Staff directory</h3>
+            <h3 class="card-title" style="margin: 0">Roster</h3>
             <div class="staff-toolbar-filters">
               <select id="staff-section-filter" class="filter-select" aria-label="Filter by school section">
                 <option value="">All sections</option>
@@ -118,8 +182,9 @@
           </div>
         </div>
 
-        <div class="card">
-          <h3 id="emp-form-title" class="section-title">Add staff member</h3>
+        <div class="card card-form-accent">
+          <h3 id="emp-form-title" class="card-title">Add staff member</h3>
+          <p class="card-subtitle">New hires and updates are saved on this device.</p>
           <form id="emp-form">
             <input type="hidden" id="emp-id" value="" />
             <div class="form-grid">
@@ -171,12 +236,26 @@
 
       <section id="payroll" class="panel" aria-labelledby="pay-heading">
         <h2 id="pay-heading" class="visually-hidden">Run payroll</h2>
-        <div class="card">
-          <h3 class="section-title">Run payroll</h3>
-          <div class="form-grid">
-            <div>
-              <label for="pay-period">Pay period</label>
-              <input id="pay-period" type="text" placeholder="e.g. March 2026" />
+
+        <div class="panel-hero panel-hero--payroll">
+          <div class="panel-hero-text">
+            <h2 class="panel-hero-title">Run payroll</h2>
+            <p class="panel-hero-desc">
+              Calculate monthly pay for your roster. Set the period, tax and pension rates, then choose all staff, one section, or one person.
+            </p>
+          </div>
+        </div>
+
+        <div class="payroll-layout">
+          <div class="card payroll-form-card">
+            <h3 class="card-title">Payroll settings</h3>
+            <p class="card-subtitle">Gross = base + allowance · Net = gross − tax − pension</p>
+
+            <p class="form-section-label">Period &amp; deductions</p>
+            <div class="form-grid form-grid--2">
+              <div>
+                <label for="pay-period">Pay period</label>
+              <input id="pay-period" type="text" placeholder="e.g. May 2026" />
             </div>
             <div>
               <label for="tax-pct">Income tax (%)</label>
@@ -186,8 +265,12 @@
               <label for="pension-pct">Pension / other (%)</label>
               <input id="pension-pct" type="number" min="0" max="100" step="0.5" value="7" />
             </div>
-            <div>
-              <label for="payroll-section">Section</label>
+            </div>
+
+            <p class="form-section-label">Who to pay</p>
+            <div class="form-grid form-grid--2">
+              <div>
+                <label for="payroll-section">Section</label>
               <select id="payroll-section">
                 <option value="">All sections</option>
                 <option value="kg">Kindergarten</option>
@@ -201,22 +284,40 @@
               <select id="payroll-employee"></select>
             </div>
           </div>
-          <p style="color: var(--muted); font-size: 0.85rem; margin: 0 0 1rem">
-            Choose a section to pay only that group, or pick one person. Leave both on “All” for the full roster. Gross =
-            base + allowance; net = gross − tax − pension.
-          </p>
-          <button type="button" class="btn btn-primary" id="btn-run-payroll">Calculate &amp; save run</button>
+            <div class="info-callout">
+              Leave section and individual on “All” to pay the full roster, or narrow to one group or one staff member.
+            </div>
+
+            <button type="button" class="btn btn-primary btn-lg" id="btn-run-payroll">Calculate &amp; save run</button>
+          </div>
+
+          <aside class="card payroll-aside" id="payroll-aside" aria-live="polite"></aside>
         </div>
-        <div id="payroll-output" class="card" style="display: none"></div>
+
+        <div id="payroll-output" class="card card-result" style="display: none"></div>
       </section>
 
       <section id="history" class="panel" aria-labelledby="hist-heading">
         <h2 id="hist-heading" class="visually-hidden">Payroll history</h2>
+
+        <div class="panel-hero panel-hero--history">
+          <div class="panel-hero-text">
+            <h2 class="panel-hero-title">Payroll history</h2>
+            <p class="panel-hero-desc">
+              Every saved payroll run is listed here. Open a run to view details, print, or download CSV.
+            </p>
+          </div>
+          <div class="panel-hero-stats" id="history-panel-stats" aria-live="polite"></div>
+        </div>
+
         <div class="card">
-          <h3 class="section-title">
-            Saved payroll runs
+          <div class="section-title">
+            <div>
+              <h3 class="card-title" style="margin: 0">Saved payroll runs</h3>
+              <p class="card-subtitle" style="margin: 0.25rem 0 0">Stored on this device only</p>
+            </div>
             <button type="button" class="btn btn-ghost btn-sm" id="btn-reset-demo">Restore default staff list</button>
-          </h3>
+          </div>
           <div class="table-wrap">
             <table id="history-table">
               <thead>
@@ -256,6 +357,7 @@
 
     <script>
       initBrandLogo("header-logo", "header-logo-fallback");
+      initBrandLogo("dash-logo", "dash-logo-fallback");
       const u = getCurrentUsername();
       if (u) document.getElementById("header-user").textContent = u;
       document.getElementById("btn-logout").addEventListener("click", logout);
